@@ -1,2 +1,4 @@
 def main() -> None:
-    print("Hello from hybrid-athlete-ai!")
+    from hybrid_athlete_ai.main import main as run_server
+
+    run_server()
