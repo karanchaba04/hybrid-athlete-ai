@@ -44,7 +44,7 @@ hybrid-athlete-ai/
 |---------|-------|
 | **V1** | Training tracker |
 | **V2** | MCP server |
-| **V3** | LangGraph AI coach (V3.0 done; V3.1 accessory graph next) |
+| **V3** | LangGraph AI coach (V3.0 chat + V3.1 accessory planner) |
 | **V4** | RAG over training knowledge |
 | **V5** | External integrations (Garmin, Strava, SugarWOD, Google Sheets) |
 | **V6** | Dashboard UI + deployment |
@@ -151,6 +151,21 @@ Example questions:
 - "How has my back squat progressed over the last month?"
 - "What's my strict press PR?"
 - "What should I focus on based on my goals and this week's training?"
+
+### Accessory planner (V3.1)
+
+Structured multi-step graph: gathers goals, weekly load, and strength snapshots, then recommends per slot.
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/coach/accessories \
+  -H "Content-Type: application/json" \
+  -d '{
+    "available_slots": ["Tue 30 min", "Thu 45 min", "Sat 30 min"],
+    "notes": "Shoulder feels tight; gym has heavy squats in CF this week"
+  }'
+```
+
+Returns `recommendation` (structured slots + rationale) and `context_summary` (the data the coach used).
 
 ## Tests
 
