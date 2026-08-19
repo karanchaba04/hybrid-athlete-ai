@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./hybrid_athlete.db"
     app_name: str = "Hybrid Athlete AI"
     debug: bool = False
+    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     anthropic_api_key: str | None = None
     coach_model: str = "claude-sonnet-5"

@@ -4,10 +4,10 @@ Personal training operating system that unifies fragmented training data and eve
 
 ## Current status
 
-**V1 — Training tracker**, **V2 — MCP server**, and **V3.0 — AI coach** are working.
+**V1 — Training tracker**, **V2 — MCP server**, **V3 — LangGraph coach**, and **V4 — Web UI** are working.
 
 ```text
-Workout entered → Stored → Analyzed → MCP / LangGraph coach reasons over it
+Browser (Next.js) → FastAPI → SQLAlchemy → analytics / MCP / LangGraph coach
 ```
 
 ### What's working
@@ -18,6 +18,8 @@ Workout entered → Stored → Analyzed → MCP / LangGraph coach reasons over i
 - Analytics: personal records, weekly volume, strength history
 - MCP server (stdio) for testing with Claude Desktop / Cursor
 - LangGraph ReAct coach at `POST /api/v1/coach/chat` (Claude / Anthropic)
+- LangGraph accessory planner at `POST /api/v1/coach/accessories` (V3.1)
+- Next.js web app: dashboard, workout logging, AI coach, history/analytics
 
 ### Project structure
 
@@ -33,6 +35,7 @@ hybrid-athlete-ai/
 │   ├── config.py
 │   ├── database.py
 │   └── main.py
+├── web/               # V4 — Next.js UI
 ├── tests/
 ├── pyproject.toml
 └── README.md
@@ -45,9 +48,9 @@ hybrid-athlete-ai/
 | **V1** | Training tracker |
 | **V2** | MCP server |
 | **V3** | LangGraph AI coach (V3.0 chat + V3.1 accessory planner) |
-| **V4** | RAG over training knowledge |
-| **V5** | External integrations (Garmin, Strava, SugarWOD, Google Sheets) |
-| **V6** | Dashboard UI + deployment |
+| **V4** | Web application UI + deployment |
+| **V5** | Real external integration (e.g. Strava) |
+| **V6** | RAG over coaching knowledge + deeper intelligence |
 
 ## Setup
 
@@ -65,6 +68,31 @@ uv run uvicorn hybrid_athlete_ai.main:app --reload
 ```
 
 Open http://127.0.0.1:8000/docs for interactive API docs.
+
+## Web UI (V4)
+
+Next.js + TypeScript + Tailwind frontend for dashboard, workout logging, AI coach, and history.
+
+```bash
+cd web
+cp .env.local.example .env.local   # optional; defaults to http://127.0.0.1:8000/api/v1
+npm install
+npm run dev
+```
+
+Run the API and UI together (two terminals):
+
+```bash
+uv run hybrid-athlete-ai          # http://127.0.0.1:8000
+cd web && npm run dev               # http://localhost:3000
+```
+
+| Screen | Route | Backend |
+|--------|-------|---------|
+| Dashboard | `/` | weekly volume, goals, recent workouts |
+| Log workout | `/log` | `POST /workouts` |
+| AI coach | `/coach` | `POST /coach/chat`, `POST /coach/accessories` |
+| History | `/history` | sessions, PRs, strength history chart |
 
 ## Quick log (easier than nested JSON)
 

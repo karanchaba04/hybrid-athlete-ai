@@ -13,6 +13,7 @@ from hybrid_athlete_ai.schemas.training import (
     WeeklyVolume,
 )
 from hybrid_athlete_ai.services import workout_service
+from hybrid_athlete_ai.services.strength_history import StrengthHistoryEntry, get_strength_history
 
 
 router = APIRouter()
@@ -67,6 +68,15 @@ def get_weekly_volume(
     db: Session = Depends(get_db),
 ):
     return workout_service.get_weekly_volume(db, reference_date=reference_date)
+
+
+@router.get("/analytics/strength-history", response_model=list[StrengthHistoryEntry])
+def get_strength_history_endpoint(
+    exercise_name: str,
+    weeks: int = Query(default=12, ge=1, le=52),
+    db: Session = Depends(get_db),
+):
+    return get_strength_history(db, exercise_name=exercise_name, weeks=weeks)
 
 
 @router.post("/goals", response_model=Goal, status_code=201)
