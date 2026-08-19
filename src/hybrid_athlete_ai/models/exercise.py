@@ -13,6 +13,7 @@ class ExerciseSet(BaseModel):
     distance_meters: float | None = None
     rpe: float | None = None
     set_type: SetType = SetType.NORMAL
+    successful: bool = True
 
 
 class ExerciseEntry(BaseModel):

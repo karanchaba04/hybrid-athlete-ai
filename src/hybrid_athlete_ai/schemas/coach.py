@@ -1,4 +1,8 @@
+from datetime import date, datetime
+
 from pydantic import BaseModel, Field
+
+from hybrid_athlete_ai.models.enums import CoachPlanStatus, CoachPlanType
 
 
 class CoachChatRequest(BaseModel):
@@ -9,6 +13,14 @@ class CoachChatRequest(BaseModel):
 class CoachChatResponse(BaseModel):
     response: str
     thread_id: str
+
+
+class CoachMessageRead(BaseModel):
+    id: int
+    thread_id: str
+    role: str
+    content: str
+    created_at: datetime | None = None
 
 
 class AccessoryExercise(BaseModel):
@@ -39,8 +51,28 @@ class AccessoryPlanRequest(BaseModel):
         max_length=2000,
         description="Optional context: nagging shoulder, travel week, etc.",
     )
+    force_regenerate: bool = Field(
+        default=False,
+        description="Skip cache and generate a new plan (supersedes current active plan for the week).",
+    )
 
 
 class AccessoryPlanResponse(BaseModel):
     recommendation: AccessoryRecommendation
     context_summary: dict
+    plan_id: int | None = None
+    from_cache: bool = False
+    context_hash: str | None = None
+
+
+class CoachPlanRead(BaseModel):
+    id: int
+    week_start: date
+    plan_type: CoachPlanType
+    context_hash: str
+    recommendation: AccessoryRecommendation
+    context_summary: dict
+    request_payload: dict | None = None
+    model: str
+    status: CoachPlanStatus
+    created_at: datetime | None = None

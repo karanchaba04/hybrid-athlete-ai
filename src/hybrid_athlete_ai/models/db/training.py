@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from hybrid_athlete_ai.database import Base
@@ -44,6 +44,21 @@ class TrainingSessionORM(Base):
         cascade="all, delete-orphan",
         order_by="ExerciseEntryORM.id",
     )
+    running_metrics: Mapped["RunningMetricsORM | None"] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    crossfit_performances: Mapped[list["CrossFitPerformanceORM"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="CrossFitPerformanceORM.id",
+    )
+    lift_performances: Mapped[list["LiftPerformanceORM"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="LiftPerformanceORM.id",
+    )
 
 
 class ExerciseEntryORM(Base):
@@ -74,8 +89,13 @@ class ExerciseSetORM(Base):
     distance_meters: Mapped[float | None] = mapped_column(Float)
     rpe: Mapped[float | None] = mapped_column(Float)
     set_type: Mapped[str] = mapped_column(String(32), nullable=False, default=SetType.NORMAL.value)
+    successful: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     exercise: Mapped[ExerciseEntryORM] = relationship(back_populates="sets")
+    lift_performance: Mapped["LiftPerformanceORM | None"] = relationship(
+        back_populates="exercise_set",
+        uselist=False,
+    )
 
 
 class GoalORM(Base):

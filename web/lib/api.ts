@@ -1,8 +1,13 @@
 import type {
   AccessoryPlanResponse,
   CoachChatResponse,
+  CoachMessage,
+  CrossFitHistorySummary,
   Goal,
   PersonalRecord,
+  RepRecord,
+  RepRecordSummary,
+  RunningHistoryEntry,
   StrengthHistoryEntry,
   TrainingSession,
   TrainingSessionCreate,
@@ -51,6 +56,27 @@ export const api = {
 
   getPersonalRecords: () => request<PersonalRecord[]>("/analytics/prs"),
 
+  getRepRecords: (movement: string, source: "strength" | "olympic" = "strength") =>
+    request<RepRecordSummary>(
+      `/analytics/rep-records?movement=${encodeURIComponent(movement)}&source=${source}`,
+    ),
+
+  getMovementHistory: (movement: string) =>
+    request<RepRecord[]>(
+      `/analytics/movement-history?movement=${encodeURIComponent(movement)}`,
+    ),
+
+  getBarbellLogbook: () => request<RepRecordSummary[]>("/analytics/barbell-logbook"),
+
+  getRunningHistory: (weeks = 12) =>
+    request<RunningHistoryEntry[]>(`/analytics/running-history?weeks=${weeks}`),
+
+  getCrossFitHistory: (workoutName: string, rxStatus?: string) => {
+    const params = new URLSearchParams({ workout_name: workoutName });
+    if (rxStatus) params.set("rx_status", rxStatus);
+    return request<CrossFitHistorySummary>(`/analytics/crossfit/history?${params}`);
+  },
+
   getStrengthHistory: (exerciseName: string, weeks = 12) =>
     request<StrengthHistoryEntry[]>(
       `/analytics/strength-history?exercise_name=${encodeURIComponent(exerciseName)}&weeks=${weeks}`,
@@ -62,9 +88,44 @@ export const api = {
       body: JSON.stringify({ message, thread_id: threadId }),
     }),
 
-  coachAccessories: (availableSlots: string[], notes?: string) =>
+  coachAccessories: (availableSlots: string[], notes?: string, forceRegenerate = false) =>
     request<AccessoryPlanResponse>("/coach/accessories", {
       method: "POST",
-      body: JSON.stringify({ available_slots: availableSlots, notes }),
+      body: JSON.stringify({
+        available_slots: availableSlots,
+        notes,
+        force_regenerate: forceRegenerate,
+      }),
     }),
+
+  getCoachThreadMessages: (threadId: string) =>
+    request<CoachMessage[]>(`/coach/threads/${encodeURIComponent(threadId)}/messages`),
 };
+
+export function parseDurationToSeconds(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes(":")) {
+    const parts = trimmed.split(":").map(Number);
+    if (parts.some((p) => Number.isNaN(p))) return null;
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return null;
+  }
+  const minutes = Number(trimmed);
+  if (Number.isNaN(minutes)) return null;
+  return Math.round(minutes * 60);
+}
+
+export function formatDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+export function formatPace(paceSecPerKm: number): string {
+  const total = Math.round(paceSecPerKm);
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}/km`;
+}

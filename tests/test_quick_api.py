@@ -36,10 +36,11 @@ def test_quick_running_log(client):
     assert response.status_code == 201
     body = response.json()
 
-    run = body["exercises"][0]
-    assert run["name"] == "Run"
-    assert run["sets"][0]["distance_meters"] == 5000
-    assert run["sets"][0]["duration_seconds"] == 1470
+    metrics = body["running_metrics"]
+    assert metrics is not None
+    assert metrics["distance_km"] == 5.0
+    assert metrics["duration_seconds"] == 1470
+    assert body["exercises"] == []
 
 
 def test_quick_wod_log(client):

@@ -44,9 +44,24 @@ def _migrate_training_sessions(db_engine=engine) -> None:
                 )
 
 
+def _migrate_exercise_sets(db_engine=engine) -> None:
+    """Add columns introduced after initial V1 schema."""
+    inspector = inspect(db_engine)
+    if "exercise_sets" not in inspector.get_table_names():
+        return
+
+    existing = {column["name"] for column in inspector.get_columns("exercise_sets")}
+    if "successful" not in existing:
+        with db_engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE exercise_sets ADD COLUMN successful BOOLEAN NOT NULL DEFAULT 1")
+            )
+
+
 def init_db() -> None:
     # Import ORM models so metadata is registered before create_all.
     import hybrid_athlete_ai.models.db  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
     _migrate_training_sessions()
+    _migrate_exercise_sets()
